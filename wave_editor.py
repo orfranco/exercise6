@@ -5,22 +5,10 @@
 # WEB PAGES WE USED:
 # NOTES: -
 #################################################################
-
 import math
-
-A_FREQUENCY = 440
-B_FREQUENCY = 494
-C_FREQUENCY = 523
-D_FREQUENCY = 587
-E_FREQUENCY = 659
-F_FREQUENCY = 698
-G_FREQUENCY = 784
-Q_FREQUENCY = 0
-MAX_VOLUME = 32767
-SAMPLE_RATE_COMPOSITION = 2000
-TIME_SAMPLE = 16
-
 import wave_helper as helper
+
+
 # main menu Constants:
 EDIT_FILE = '1'
 COMPOSITE_FILE = '2'
@@ -34,6 +22,21 @@ VOLUME_UP = '5'
 VOLUME_DOWN = '6'
 LOW_PASS_FILTER = '7'
 END_MENU = '8'
+
+# create tune constans
+
+A_FREQUENCY = 440
+B_FREQUENCY = 494
+C_FREQUENCY = 523
+D_FREQUENCY = 587
+E_FREQUENCY = 659
+F_FREQUENCY = 698
+G_FREQUENCY = 784
+Q_FREQUENCY = 0
+MAX_VOLUME = 32767
+SAMPLE_RATE_COMPOSITION = 2000
+TIME_SAMPLE = 16
+
 
 
 def get_input_in_menu(good_answers,msg):
