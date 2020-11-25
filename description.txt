@@ -28,5 +28,21 @@
         does the same thing, but each function have different tests on the while loop that
         runs until the tests pass. this tests couldn't be on another function.
 
+- read_input_file is a function that get a valid file name and and make one string.
+                    the string contains all chars that were in the original file
+
+- split_str_to_list is a function that gets the string returned by "read_input_file"
+                    with a for loop it check every char inside the string and remove all unwanted charachers e.g "\n",
+                    whitespaces etc..
+                    then, the function will create a list that is orginized by lists of string(the note) and int (the time)
+
+- calc_sample_value and get_sample_number are function that calculate a number according to there variables and return them
+
+- create_one_sample contain a for loop from 0 to the number of samples needed for a single note
+                    it creates all the samples for a single note and return it as a list of lists.
+
+- create_tune contain a for loop the goes on every note and time given in the note list,
+               using create_one_sample for every iteration. then, it will return the complete samples list
+
 - all the other assisting functions that weren't mentioned are outside there using function
     for clean code purposes.
