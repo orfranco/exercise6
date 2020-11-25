@@ -178,8 +178,11 @@ def low_pass_filter_data(wav_file_data: List[int]):
     :param wav_file_data: only the list of pairs inside the wav_file
     """
     low_pass_data = []
-    for index in range(0, len(wav_file_data)):
-        low_pass_data.append(low_pass_average(wav_file_data, index))
+    if len(wav_file_data)<=1:
+        return wav_file_data
+    else:
+        for index in range(0, len(wav_file_data)):
+            low_pass_data.append(low_pass_average(wav_file_data, index))
 
     print("Low pass filter Activated!")
     return low_pass_data
@@ -236,7 +239,7 @@ def main_menu():
           "2.Composite a new melody in wav file format.\n" \
           "3.Exit Program\n"
     return get_input_in_menu(good_answers_set,msg)
-def get_filename_and_data():
+def get_edit_filename_and_data():
     """
     this function asks the filename from the user (until he enters an existing
     file name) and return the data of it.
@@ -269,9 +272,10 @@ def edit_menu():
           "7.Activate low pass filter.\n" \
           "8.Go to end menu.\n"
     return get_input_in_menu(good_answers_set,msg)
-
-def end_menu_save_file(wav_file_data: List[int]):
+def output_filename_valid(filename):
     #TODO: validate the name?
+    pass
+def end_menu_save_file(wav_file_data: List[int]):
     """
         this function asks the filename from the user (until he enters an existing
         file name) and return the data of it.
@@ -284,8 +288,9 @@ def end_menu_save_file(wav_file_data: List[int]):
     while good_name == -1:
         print("you entered a wrong file name!")
         filename_input = input(msg)
-        good_name = helper.save_wave(wav_file_data[0], wav_file_data[1],
-                                     filename_input)
+        if output_filename_valid(filename_input):
+            good_name = helper.save_wave(wav_file_data[0], wav_file_data[1],
+                                         filename_input)
 def get_compose_filename():
     """
     this function asks the compose filename from the user
@@ -304,7 +309,7 @@ def main():
     while True:
         usr_input_main = main_menu()
         if usr_input_main == EDIT_FILE:
-            wav_file_data = get_filename_and_data()
+            wav_file_data = get_edit_filename_and_data()
             wav_file_data = edit_wav(wav_file_data)
             end_menu_save_file(wav_file_data)
         elif usr_input_main == COMPOSE_FILE:

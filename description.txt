@@ -1,1 +1,32 @@
-franco_functions:
+- get_input_in_menu: the program is built on menu's that gets input from the user.
+                      the main menu and the edit menu have the same structure so
+                       we built a function called: get_input_in_menu.
+                        this function arguments are tuples that contain the right
+                         answers (in our case its 1,2,3 and 1,2,3,4,5,6,7,8
+                         but it can be any tuple) and the message to show the user.
+                         the functions that uses get_input_in menu are main_menu and edit_menu.
+- the main function: a loop that runs until the user wants to exit the program.
+                     on every iteration it calls the main_menu function and gets
+                     the valid response from it (because get_input_in_menu runs until it gets the
+                     right response).
+                     then, it checks which option the user chose by comparing it to the
+                     main menu constants.
+- edit_wav: a loop that runs until the user wants to go to the end menu.
+            on every iteration, it calls the edit_menu function and gets the valid
+            response from it.
+            then, it checks which option the user chose by comparing it to the edit menu
+            constants.
+            every option has its own function to get a clean code.
+- speed_down_data have an assisting function that is used by low_pass_average too.
+    this function is pairs_average and it calculates the average of 2 pairs of values.
+    it is used in low_pass_average when the index given is the first or the last in the list,
+    because by the definition of low pass filter, when the pair is the first or the last,
+    it is only needed to calculate the average of the nearest pair and not 3 pairs like with
+    other indexes.
+
+- get_edit_filename_and_data and get_compose_filename are 2 seperate functions that on paper,
+        does the same thing, but each function have different tests on the while loop that
+        runs until the tests pass. this tests couldn't be on another function.
+
+- all the other assisting functions that weren't mentioned are outside there using function
+    for clean code purposes.
