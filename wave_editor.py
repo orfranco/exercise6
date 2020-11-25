@@ -11,7 +11,7 @@ import wave_helper as helper
 
 # main menu Constants:
 EDIT_FILE = '1'
-COMPOSITE_FILE = '2'
+COMPOSE_FILE = '2'
 EXIT_PROGRAM = '3'
 # edit menu Constants:
 FLIP = '1'
@@ -23,7 +23,7 @@ VOLUME_DOWN = '6'
 LOW_PASS_FILTER = '7'
 END_MENU = '8'
 
-# create tune constans
+# Create tune constants
 
 A_FREQUENCY = 440
 B_FREQUENCY = 494
@@ -36,6 +36,8 @@ Q_FREQUENCY = 0
 MAX_VOLUME = 32767
 SAMPLE_RATE_COMPOSITION = 2000
 TIME_SAMPLE = 16
+TUNE_FREQ_DICT = {"A": A_FREQUENCY, "B": B_FREQUENCY, "C": C_FREQUENCY, "D": D_FREQUENCY,
+             "E": E_FREQUENCY, "F": F_FREQUENCY, "G": G_FREQUENCY, "Q": Q_FREQUENCY}
 
 
 
@@ -55,9 +57,9 @@ def main_menu():
     this function uses the general menu function with the message of the main
     menu.
     """
-    good_answers_set = (EDIT_FILE, COMPOSITE_FILE, EXIT_PROGRAM)
+    good_answers_set = (EDIT_FILE, COMPOSE_FILE, EXIT_PROGRAM)
     msg = f"What would you like to do? " \
-          f"(enter {EDIT_FILE}/{COMPOSITE_FILE}/{EXIT_PROGRAM})\n"\
+          f"(enter {EDIT_FILE}/{COMPOSE_FILE}/{EXIT_PROGRAM})\n"\
           "1.Edit wav file.\n" \
           "2.Composite a new melody in wav file format.\n" \
           "3.Exit Program\n"
@@ -151,39 +153,76 @@ def main():
         wav_file_data = get_filename_and_data()
         wav_file_data = edit_wav(wav_file_data)
         save_file(end_menu())
-    if usr_input_main == COMPOSITE_FILE:
+    if usr_input_main == COMPOSE_FILE:
         composited_file_data = []
-        save_file(composited_file_data,end_menu())
+        save_file(composited_file_data, end_menu())
 
-if __name__ == "__main__":
-    main()
-def read_input_file(file):
+
+def read_input_file(file) -> str:
     comp_file = open(file, "r")
-    input_str = comp_file.readlines()
-    print(input_str)
+    input_str = ""
+    input_list = comp_file.readlines()
+    for line in input_list:
+        input_str += str(line)
     return input_str
 
 
+def split_str_to_list(input_string):
+    allowed_char = "ABCDEFGQ"
+    input_string = input_string.strip().replace("\n", " ")
+    input_list = input_string.split(" ")
+    note_list = []
+    for char in input_list:
+        if (char in allowed_char or char.isnumeric()) and char != "":
+            note_list.append(char)
+    tones_list = []
+    pair_counter = 0
+    while pair_counter < len(note_list):
+        tones_list.append([note_list[pair_counter], note_list[pair_counter + 1]])
+        pair_counter += 2
+    return tones_list
+
+
 def calc_sample_value(sample_rate: int, frequency: int, sample_index: int) -> int:
+    if frequency == Q_FREQUENCY:
+        return 0
     samples_per_cycle = sample_rate/frequency
     sample = MAX_VOLUME*math.sin(math.pi*2*(sample_index/samples_per_cycle))
     return int(sample)
 
 
-def create_one_sample(note: int, time: int) -> list:
+def get_samples_number(time):
+    return int((time/TIME_SAMPLE) * SAMPLE_RATE_COMPOSITION)
+
+
+def create_one_sample(note: str, time: int, is_first: bool, index: int) -> list:
     note_list = []
-    for sample in range(int((time/TIME_SAMPLE) * SAMPLE_RATE_COMPOSITION)):
-        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, note, sample)
+    samples_number_needed = get_samples_number(time)
+    if is_first and index != 0:
+        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, TUNE_FREQ_DICT[note], 0)
         note_list.append([sample_value, sample_value])
-    print(len(note_list))
+    for sample in range(samples_number_needed):
+        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, TUNE_FREQ_DICT[note], index)
+        note_list.append([sample_value, sample_value])
+        index += 1
+    print(index)
     return note_list
+
 
 def create_tune(sample_list):
     tune_list = []
-    for sample in sample_list:
-        tune_list.extend(create_one_sample(sample[0], sample[1]))
+    index = 0
+    for sample in range(len(sample_list)):
+        is_first = True
+        if sample != 0 and sample_list[sample][0] == sample_list[sample - 1][0]:
+            is_first = False
+        tune_list.extend(create_one_sample(sample_list[sample][0], int(sample_list[sample][1]), is_first, index))
+        index += get_samples_number(int(sample_list[sample][1]))
     return tune_list
 
 
+if __name__ == "__main__":
+    #main()
+    print(create_tune(split_str_to_list(read_input_file("Composition Samples\sample6_over16.txt"))))
 
-
+    helper.save_wave(2000, create_tune(split_str_to_list(read_input_file("Composition Samples\sample6_over16.txt"))), "over16.wav")
