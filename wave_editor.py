@@ -7,6 +7,7 @@
 #################################################################
 import math
 import wave_helper as helper
+import os
 
 # main menu Constants:
 EDIT_FILE = '1'
@@ -39,9 +40,179 @@ TIME_SAMPLE = 16
 TUNE_FREQ_DICT = {"A": A_FREQUENCY, "B": B_FREQUENCY, "C": C_FREQUENCY, "D": D_FREQUENCY,
              "E": E_FREQUENCY, "F": F_FREQUENCY, "G": G_FREQUENCY, "Q": Q_FREQUENCY}
 
+from typing import List,Tuple
 
 
-def get_input_in_menu(good_answers,msg):
+def flip_data(wav_file_data: List[int]):
+    """
+    this function inverts the order of the list items.
+    :param wav_file_data: only the list of pairs inside the wav_file
+     (without the sample rate)
+    """
+    print("Data Flipped!")
+    return wav_file_data[::-1]
+def negate_data(wav_file_data: List[int]):
+    """
+    this function multiply all the pairs in the list with (-1) except the
+    numbers that the multiplication result will get a value that is bigger
+    than MAX_VOLUME.
+    :param wav_file_data: only the list of pairs inside the wav_file
+     (without the sample rate)
+    """
+    for pair_index, pair in enumerate(wav_file_data):
+        for value_index, value in enumerate(pair):
+            if -1*value >= MAX_VOLUME:
+                wav_file_data[pair_index][value_index] = MAX_VOLUME
+            else:
+                wav_file_data[pair_index][value_index] = -1*value
+    print("Data Negated!")
+    return wav_file_data
+def speed_up_data(wav_file_data: List[int]):
+    """
+    this function returns a list that contains
+     only the list members that are placed in even indexes.
+    :param wav_file_data: only the list of pairs inside the wav_file
+    """
+    print("Raised Data speed!")
+    return [wav_file_data[even] for even in range(0,len(wav_file_data),2)]
+def pairs_average(wav_file_data: List[int],insert_index:int):
+    """
+    this function calculates the average pair of the pair in insert_index+1
+    and the pair in index. average pair of (1,2)(3,2) is (2,2).
+    :param wav_file_data: only the list of pairs inside the wav_file
+    :param insert_index: the index of the first pair.
+    """
+    average_pair = []
+    for value_in_pair in range(2):
+        average_pair.append(int((wav_file_data[insert_index+1][value_in_pair]
+                                 + wav_file_data[insert_index][value_in_pair])
+                                / 2))
+    return average_pair
+def speed_down_data(wav_file_data: List[int]):
+    """
+    this function inserts an average pair between any 2 pairs on the
+    wav_file_data list.
+    :param wav_file_data: only the list of pairs inside the wav_file
+    :return:
+    """
+    lowered_data = wav_file_data[:]
+    # an index that grows in 1 on every insertion. this index helps to count
+    # where will be the next insertion
+    # (because of the fact that lowered_data always grows).
+    insertion_number = 1
+    for insert_index in range(0, len(wav_file_data)-1):
+        lowered_data.insert(insert_index + insertion_number,
+                            pairs_average(wav_file_data,insert_index))
+        insertion_number += 1
+
+    print("Lowered Data speed!")
+    return lowered_data
+def volume_up_data(wav_file_data: List[int]):
+    """
+    this function multiplies all the values on the wav_file_data list and
+    returns the multiplied list. if the multiplied value is bigger than
+    MAX_VOLUME or lower than MIN_VOLUME the function assigns them instead of
+    the multiplied value.
+    :param wav_file_data: only the list of pairs inside the wav_file
+    """
+    for pair_index, pair in enumerate(wav_file_data):
+        for value_index, value in enumerate(pair):
+            if int(value*1.2)>=MAX_VOLUME:
+                wav_file_data[pair_index][value_index] = MAX_VOLUME
+            elif int(value*1.2)<=MIN_VOLUME:
+                wav_file_data[pair_index][value_index] = MIN_VOLUME
+            else:
+                wav_file_data[pair_index][value_index] = int(value*1.2)
+
+    print("Data Volume Raised")
+    return wav_file_data
+def volume_down_data(wav_file_data: List[int]):
+    """
+        this function divides all the values on the wav_file_data list and
+        returns the divided list.
+        :param wav_file_data: only the list of pairs inside the wav_file
+        """
+    for pair_index, pair in enumerate(wav_file_data):
+        for value_index, value in enumerate(pair):
+            wav_file_data[pair_index][value_index] = int(value / 1.2)
+
+    print("Data Volume Raised")
+    return wav_file_data
+
+def trio_average(wav_file_data: List[int],index:int):
+    """
+    this function calculates the average of three pairs
+    in indexes: index, index-1,index-2 on wav_file_data list.
+    :param wav_file_data: only the list of pairs inside the wav_file
+    :param index: the biggest index from the indexes of the 3 pairs.
+    :return: a pair that represent the average of the 3 pairs.
+    """
+    trio_average = []
+    sum = 0
+    for place_in_pair in range(2):
+        for place_from_index in range(3):
+            sum += wav_file_data[index - place_from_index][place_in_pair]
+        trio_average.append(int(sum / 3))
+        sum = 0
+    return trio_average
+def low_pass_average(wav_file_data: List[int],index:int):
+    """
+    this function return the value that need to be assigned in the index
+    after activating a low pass filter on the file.
+    :param wav_file_data: only the list of pairs inside the wav_file
+    :param index: the index of the pair that its value after
+    low_pass_filter need to be calculated
+    """
+    average = []
+    if index == 0:
+        average = pairs_average(wav_file_data,index)
+    elif index == len(wav_file_data)-1:
+        average = pairs_average(wav_file_data,index-1)
+    else:
+        average = trio_average(wav_file_data,index+1)
+    return average
+def low_pass_filter_data(wav_file_data: List[int]):
+    """
+    this function creates a new list that contains the low pass filter
+     values of wav_file_data list.
+    :param wav_file_data: only the list of pairs inside the wav_file
+    """
+    low_pass_data = []
+    for index in range(0, len(wav_file_data)):
+        low_pass_data.append(low_pass_average(wav_file_data, index))
+
+    print("Low pass filter Activated!")
+    return low_pass_data
+
+def edit_wav(wav_file_data: List[int]):
+    """
+    this function runs until the user chooses to go to the end menu (by
+    entering END_MENU in the edit menu). on every iteration, the function
+    call the chosen edit function.
+    :param wav_file_data: a wav file data to edit.
+    :return: the edited file.
+    """
+    while True:
+        usr_input_edit = edit_menu()
+        if usr_input_edit == FLIP:
+            wav_file_data[1][:] = flip_data(wav_file_data[1])
+        elif usr_input_edit == NEGATE:
+            wav_file_data[1][:] = negate_data(wav_file_data[1])
+        elif usr_input_edit == SPEED_UP:
+            wav_file_data[1][:] = speed_up_data(wav_file_data[1])
+        elif usr_input_edit == SPEED_DOWN:
+            wav_file_data[1][:] = speed_down_data(wav_file_data[1])
+        elif usr_input_edit == VOLUME_UP:
+            wav_file_data[1][:] = volume_up_data(wav_file_data[1])
+        elif usr_input_edit == VOLUME_DOWN:
+            wav_file_data[1][:] = volume_down_data(wav_file_data[1])
+        elif usr_input_edit == LOW_PASS_FILTER:
+            wav_file_data[1][:] = low_pass_filter_data(wav_file_data[1])
+        else:
+            # if input is END_MENU:
+            break
+    return wav_file_data
+def get_input_in_menu(good_answers:Tuple[str],msg:str):
     """
     this function is a general menu, that gets the message to show the user
     and the corrects answers the user can enter (0 can't be in the values).
@@ -71,13 +242,12 @@ def get_filename_and_data():
     file name) and return the data of it.
     :return:
     """
-    filename_input = input("What is the name of the file"
-                           " you want to edit?")
+    msg = "What is the name of the file you want to edit?"
+    filename_input = input(msg)
     file_data = helper.load_wave(filename_input)
     while file_data == -1:
         print("You entered a wrong file name.")
-        filename_input = input("What is the name of the file"
-                               " you want to edit?")
+        filename_input = input(msg)
         file_data = helper.load_wave(filename_input)
     return file_data
 def edit_menu():
@@ -100,138 +270,37 @@ def edit_menu():
           "8.Go to end menu.\n"
     return get_input_in_menu(good_answers_set,msg)
 
-def flip_data(wav_file_data):
-    print("Data Flipped!")
-    return wav_file_data[::-1]
-def negate_data(wav_file_data):
-    for pair_index, pair in enumerate(wav_file_data):
-        for value_index, value in enumerate(pair):
-            if -1*value >= MAX_VOLUME:
-                wav_file_data[pair_index][value_index] = MAX_VOLUME
-            else:
-                wav_file_data[pair_index][value_index] = -1*value
-    print("Data Negated!")
-    return wav_file_data
-def speed_up_data(wav_file_data):
-    print("Raised Data speed!")
-    return [wav_file_data[even] for even in range(0,len(wav_file_data),2)]
-def pairs_average(wav_file_data,insert_index):
-    average_pair = []
-    for i in range(2):
-        average_pair.append(int((wav_file_data[insert_index+1][i]
-                            +wav_file_data[insert_index][i])/2))
-    return average_pair
-def speed_down_data(wav_file_data):
-    lowered_data = wav_file_data[:]
-    insertion_number = 1
-    for insert_index in range(0, len(wav_file_data)-1):
-        lowered_data.insert(insert_index + insertion_number,
-                            pairs_average(wav_file_data,insert_index))
-        insertion_number+=1
-
-    print("Lowered Data speed!")
-    return lowered_data
-def volume_up_data(wav_file_data):
-    for pair_index, pair in enumerate(wav_file_data):
-        for value_index, value in enumerate(pair):
-            if int(value*1.2)>=MAX_VOLUME:
-                wav_file_data[pair_index][value_index] = MAX_VOLUME
-            elif int(value*1.2)<=MIN_VOLUME:
-                wav_file_data[pair_index][value_index] = MIN_VOLUME
-            else:
-                wav_file_data[pair_index][value_index] = int(value*1.2)
-
-    print("Data Volume Raised")
-    return wav_file_data
-def volume_down_data(wav_file_data):
-    for pair_index, pair in enumerate(wav_file_data):
-        for value_index, value in enumerate(pair):
-            wav_file_data[pair_index][value_index] = int(value / 1.2)
-
-    print("Data Volume Raised")
-    return wav_file_data
-
-def trio_average(wav_file_data,index):
-    trio_average = []
-    sum = 0
-    for place_in_pair in range(2):
-        for cell_from_index in range(3):
-            sum += wav_file_data[index-cell_from_index][place_in_pair]
-        trio_average.append(int(sum / 3))
-        sum = 0
-    return trio_average
-def low_pass_average(wav_file_data,index):
-    average = []
-    if index == 0:
-        average = pairs_average(wav_file_data,index)
-    elif index == len(wav_file_data)-1:
-        average = pairs_average(wav_file_data,index-1)
-    else:
-        average = trio_average(wav_file_data,index+1)
-    return average
-
-def low_pass_filter_data(wav_file_data):
-    low_pass_data = []
-    for index in range(0, len(wav_file_data)):
-        low_pass_data.append(low_pass_average(wav_file_data, index))
-
-    print("Low pass filter Activated!")
-    return low_pass_data
-
-def edit_wav(wav_file_data):
-    """
-    this function runs until the user chooses to go to the end menu (by
-    entering END_MENU in the edit menu). on every iteration, the function
-    call the chosen edit function.
-    :param wav_file_data: a wav file data to edit.
-    :return: the edited file.
-    """
-    while True:
-        print(wav_file_data)
-        usr_input_edit = edit_menu()
-        if usr_input_edit == FLIP:
-            wav_file_data[1][:] = flip_data(wav_file_data[1])
-        elif usr_input_edit == NEGATE:
-            wav_file_data[1][:] = negate_data(wav_file_data[1])
-        elif usr_input_edit == SPEED_UP:
-            wav_file_data[1][:] = speed_up_data(wav_file_data[1])
-        elif usr_input_edit == SPEED_DOWN:
-            wav_file_data[1][:] = speed_down_data(wav_file_data[1])
-        elif usr_input_edit == VOLUME_UP:
-            wav_file_data[1][:] = volume_up_data(wav_file_data[1])
-        elif usr_input_edit == VOLUME_DOWN:
-            wav_file_data[1][:] = volume_down_data(wav_file_data[1])
-        elif usr_input_edit == LOW_PASS_FILTER:
-            wav_file_data[1][:] = low_pass_filter_data(wav_file_data[1])
-        else:
-            # if input is END_MENU:
-            break
-    return wav_file_data
-
-
-def end_menu_save_file(wav_file_data):
+def end_menu_save_file(wav_file_data: List[int]):
     #TODO: validate the name?
     """
         this function asks the filename from the user (until he enters an existing
         file name) and return the data of it.
         :return:
         """
-    filename_input = input("enter the name of the file you want to save "
-                           "the data in?")
+    msg = "enter the name of the file you want to save the data in?"
+    filename_input = input(msg)
     good_name = helper.save_wave(wav_file_data[0],wav_file_data[1],
                                  filename_input)
-
     while good_name == -1:
         print("you entered a wrong file name!")
-        filename_input = input("enter the name of the file you want to save "
-                               "the data in?")
-        print(wav_file_data)
+        filename_input = input(msg)
         good_name = helper.save_wave(wav_file_data[0], wav_file_data[1],
                                      filename_input)
-
-
-
+def get_compose_filename():
+    """
+    this function asks the compose filename from the user
+     (until he enters an existing file name) and return the data of it.
+    :return: the legal file name.
+    """
+    filename_input = input("What is the name of the composition file?")
+    while not os.path.isfile(filename_input):
+        print("You entered a wrong file name.")
+        filename_input = input("What is the name of the composition file?")
+    return filename_input
 def main():
+    """
+    this is the main function. it runs until the user enters EXIT_PROGRAM.
+    """
     while True:
         usr_input_main = main_menu()
         if usr_input_main == EDIT_FILE:
@@ -239,9 +308,9 @@ def main():
             wav_file_data = edit_wav(wav_file_data)
             end_menu_save_file(wav_file_data)
         elif usr_input_main == COMPOSE_FILE:
-            #create_tune()
-            composited_file_data = []
-            composited_file_data = edit_wav()
+            #TODO: def composite(filename)
+            composited_file_data = composite(get_compose_filename())
+            composited_file_data = edit_wav(composited_file_data)
             end_menu_save_file(composited_file_data)
         else:
             break
@@ -312,5 +381,6 @@ if __name__ == "__main__":
     print(split_str_to_list(read_input_file("Composition Samples\sample6_over16.txt")))
     print(split_str_to_list(read_input_file("Composition Samples\sample4_spaces.txt")))
 
-
+if __name__ == "__main__":
+    main()
 
