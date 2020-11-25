@@ -245,8 +245,6 @@ def main():
             end_menu_save_file(composited_file_data)
         else:
             break
-if __name__ == "__main__":
-    main()
 
 def read_input_file(file):
     comp_file = open(file, "r")
@@ -259,7 +257,7 @@ def read_input_file(file):
 
 def split_str_to_list(input_string):
     allowed_char = "ABCDEFGQ"
-    input_string = input_string.strip().replace("\n", " ")
+    #input_string = input_string.strip().replace("\n", " ")
     input_list = input_string.split(" ")
     note_list = []
     for char in input_list:
@@ -310,6 +308,9 @@ def create_tune(sample_list):
         index += get_samples_number(int(sample_list[sample][1]))
     return tune_list
 
+if __name__ == "__main__":
+    print(split_str_to_list(read_input_file("Composition Samples\sample6_over16.txt")))
+    print(split_str_to_list(read_input_file("Composition Samples\sample4_spaces.txt")))
 
 
 
