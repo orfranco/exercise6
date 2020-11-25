@@ -297,6 +297,7 @@ def get_compose_filename():
         print("You entered a wrong file name.")
         filename_input = input("What is the name of the composition file?")
     return filename_input
+
 def main():
     """
     this is the main function. it runs until the user enters EXIT_PROGRAM.
@@ -316,21 +317,32 @@ def main():
             break
 
 def read_input_file(file):
+    """
+    This function recives a valid file name
+    :return: a list of notes and tiem e.g [[D, 4],[G, 5]]
+    """
     comp_file = open(file, "r")
     input_str = ""
     input_list = comp_file.readlines()
     for line in input_list:
         input_str += str(line)
+    comp_file.close()
     return input_str
 
 
 def split_str_to_list(input_string):
-    allowed_char = "ABCDEFGQ"
-    #input_string = input_string.strip().replace("\n", " ")
+    """
+    This function will sort the notes and the time of the notes into a list e.g [[D.4], [G,16]]
+    the function will check each char in a string and  check if its needed or not
+    :param input_string:a string containes notes and times
+    :return: list of lists in the form of: [[NOTE.TIME], [NOTE,TIME]] e.g [[D.4], [G,16]]
+    """
+    allowed_char = "ABCDEFGQ1234567890"
+    input_string = input_string.replace("\n", "")
     input_list = input_string.split(" ")
     note_list = []
     for char in input_list:
-        if (char in allowed_char or char.isnumeric()) and char != "":
+        if char in allowed_char and char != "":
             note_list.append(char)
     tones_list = []
     pair_counter = 0
@@ -341,7 +353,11 @@ def split_str_to_list(input_string):
 
 
 def calc_sample_value(sample_rate: int, frequency: int, sample_index: int) -> int:
-    if frequency == Q_FREQUENCY:
+    """
+    Calculates the sample
+    :return: an integer
+    """
+    if frequency == TUNE_FREQ_DICT["Q"]:
         return 0
     samples_per_cycle = sample_rate/frequency
     sample = MAX_VOLUME*math.sin(math.pi*2*(sample_index/samples_per_cycle))
@@ -349,38 +365,77 @@ def calc_sample_value(sample_rate: int, frequency: int, sample_index: int) -> in
 
 
 def get_samples_number(time):
+    """
+    this function will calculate the number of samples needed of each note
+    :return: an integer
+    """
     return int((time/TIME_SAMPLE) * SAMPLE_RATE_COMPOSITION)
 
 
-def create_one_sample(note: str, time: int, is_first: bool, index: int) -> list:
+def create_one_sample(note: str, time: int) -> list:
+    """
+    return one audio sample according to the vars
+    :param note:The note were sampling
+    :param time:how much time in 1/16 second
+    :return:list [int, int]
+    """
     note_list = []
     samples_number_needed = get_samples_number(time)
-    if is_first and index != 0:
-        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, TUNE_FREQ_DICT[note], 0)
-        note_list.append([sample_value, sample_value])
     for sample in range(samples_number_needed):
-        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, TUNE_FREQ_DICT[note], index)
+        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, TUNE_FREQ_DICT[note], sample)
         note_list.append([sample_value, sample_value])
-        index += 1
-    print(index)
+
     return note_list
 
 
-def create_tune(sample_list):
+def create_tune(tunes_list):
+    """
+    This will receive the tunes list and time and generate the entire sample list
+    :param tunes_list: list of note and time
+    :return: the complete samples lits
+    """
     tune_list = []
     index = 0
-    for sample in range(len(sample_list)):
-        is_first = True
-        if sample != 0 and sample_list[sample][0] == sample_list[sample - 1][0]:
-            is_first = False
-        tune_list.extend(create_one_sample(sample_list[sample][0], int(sample_list[sample][1]), is_first, index))
-        index += get_samples_number(int(sample_list[sample][1]))
+    for sample in range(len(tunes_list)):
+        tune_list.extend(create_one_sample(tunes_list[sample][0], int(tunes_list[sample][1])))
+        index += get_samples_number(int(tunes_list[sample][1]))
     return tune_list
 
-if __name__ == "__main__":
-    print(split_str_to_list(read_input_file("Composition Samples\sample6_over16.txt")))
-    print(split_str_to_list(read_input_file("Composition Samples\sample4_spaces.txt")))
+
+def composite(filename):
+    """
+    the main function to compose a file
+    :param filename: the name of the file containing the information needed
+    :return: a genrated samples list with its sample rate
+    """
+    tunes_string = read_input_file(filename)
+    tunes_list = split_str_to_list(tunes_string)
+    return [SAMPLE_RATE_COMPOSITION, create_tune(tunes_list)]
+
+
+
+"""
+def test_composition_1():
+    wav_tupel = helper.load_wave("sample1.wav")
+    my_list = composite("sample1.txt")
+    for index in range(len(wav_tupel[1])):
+        if wav_tupel[1][index] != my_list[1][index]:
+            print(f"index: {index}\n"
+                  f"should be {wav_tupel[1][index]}\n"
+                  f"but insted {my_list[1][index]} ")
+
+def test_composition_2():
+    wav_tupel = helper.load_wave("sample2.wav")
+    my_list = composite("sample2.txt")
+    for index in range(len(wav_tupel[1])):
+        if wav_tupel[1][index] != my_list[1][index]:
+            print(f"index: {index}\n"
+                  f"should be {wav_tupel[1][index]}\n"
+                  f"but insted {my_list[1][index]} ")"""
+
 
 if __name__ == "__main__":
     main()
+
+
 
