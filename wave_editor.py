@@ -400,10 +400,8 @@ def create_tune(tunes_list):
     :return: the complete samples lits
     """
     tune_list = []
-    index = 0
     for sample in range(len(tunes_list)):
         tune_list.extend(create_one_sample(tunes_list[sample][0], int(tunes_list[sample][1])))
-        index += get_samples_number(int(tunes_list[sample][1]))
     return tune_list
 
 
@@ -419,28 +417,13 @@ def composite(filename):
 
 
 
-"""
-def test_composition_1():
-    wav_tupel = helper.load_wave("sample1.wav")
-    my_list = composite("sample1.txt")
-    for index in range(len(wav_tupel[1])):
-        if wav_tupel[1][index] != my_list[1][index]:
-            print(f"index: {index}\n"
-                  f"should be {wav_tupel[1][index]}\n"
-                  f"but insted {my_list[1][index]} ")
 
-def test_composition_2():
-    wav_tupel = helper.load_wave("sample2.wav")
-    my_list = composite("sample2.txt")
-    for index in range(len(wav_tupel[1])):
-        if wav_tupel[1][index] != my_list[1][index]:
-            print(f"index: {index}\n"
-                  f"should be {wav_tupel[1][index]}\n"
-                  f"but insted {my_list[1][index]} ")"""
 
 
 if __name__ == "__main__":
     main()
+
+
 
 
 
