@@ -342,12 +342,12 @@ def split_str_to_list(input_string):
     :param input_string:a string containes notes and times
     :return: list of lists in the form of: [[NOTE.TIME], [NOTE,TIME]] e.g [[D.4], [G,16]]
     """
-    allowed_char = "ABCDEFGQ1234567890"
+    allowed_char = "ABCDEFGQ"
     input_string = input_string.replace("\n", "")
     input_list = input_string.split(" ")
     note_list = []
     for char in input_list:
-        if char in allowed_char and char != "":
+        if (char in allowed_char or char.isnumeric()) and char != "":
             note_list.append(char)
     tones_list = []
     pair_counter = 0
