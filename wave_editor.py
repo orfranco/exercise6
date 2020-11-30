@@ -344,6 +344,7 @@ def split_str_to_list(input_string):
     """
     allowed_char = "ABCDEFGQ"
     input_string = input_string.replace("\n", "")
+    input_string = input_string.replace("\t", "")
     input_list = input_string.split(" ")
     note_list = []
     for char in input_list:
