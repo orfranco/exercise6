@@ -358,14 +358,14 @@ def split_str_to_list(input_string):
     return tones_list
 
 
-def calc_sample_value(sample_rate: int, frequency: int, sample_index: int) -> int:
+def calc_sample_value(frequency: int, sample_index: int) -> int:
     """
     Calculates the sample
     :return: an integer
     """
     if frequency == TUNE_FREQ_DICT["Q"]:
         return 0
-    samples_per_cycle = sample_rate/frequency
+    samples_per_cycle = SAMPLE_RATE_COMPOSITION/frequency
     sample = MAX_VOLUME*math.sin(math.pi*2*(sample_index/samples_per_cycle))
     return int(sample)
 
@@ -388,7 +388,7 @@ def create_one_sample(note: str, time: int) -> list:
     note_list = []
     samples_number_needed = get_samples_number(time)
     for sample in range(samples_number_needed):
-        sample_value = calc_sample_value(SAMPLE_RATE_COMPOSITION, TUNE_FREQ_DICT[note], sample)
+        sample_value = calc_sample_value(TUNE_FREQ_DICT[note], sample)
         note_list.append([sample_value, sample_value])
 
     return note_list
@@ -423,6 +423,7 @@ def composite(filename):
 
 if __name__ == "__main__":
     main()
+
 
 
 
